@@ -1,34 +1,51 @@
+import { KeyboardEvent } from 'react';
+
 import { Badge } from '../../../../components/Badge';
-import { ProgressBar } from '../../../../components/ProgressBar';
 import { Pokemon } from '../../../../models/pokemon.model';
 import {
-  AbilitiesContainer,
-  AbilitiesList,
-  AbilityTag,
   CardContainer,
   HeaderRow,
   ImageContainer,
-  InfoGrid,
-  InfoItem,
-  InfoLabel,
-  InfoValue,
   PokemonImage,
   PokemonName,
   PokemonNumber,
-  StatsContainer,
-  StatsTitle,
   TypesRow,
 } from './styled';
 
 export interface PokemonCardProps {
   pokemon: Pokemon;
+  onSelectPokemon?: (id: number) => void;
 }
 
-export const PokemonCard = ({ pokemon }: PokemonCardProps) => {
+export const PokemonCard = ({ pokemon, onSelectPokemon }: PokemonCardProps) => {
   const formattedId = `#${String(pokemon.id).padStart(3, '0')}`;
 
+  const handleClick = () => {
+    onSelectPokemon?.(pokemon.id);
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLLIElement>) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onSelectPokemon?.(pokemon.id);
+    }
+  };
+
   return (
-    <CardContainer $mainType={pokemon.mainType}>
+    <CardContainer
+      $mainType={pokemon.mainType}
+      $isClickable={Boolean(onSelectPokemon)}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      tabIndex={onSelectPokemon ? 0 : undefined}
+      role={onSelectPokemon ? 'button' : undefined}
+      aria-label={onSelectPokemon ? `Ver detalhes de ${pokemon.name}` : undefined}
+    >
+      <HeaderRow>
+        <PokemonName>{pokemon.name}</PokemonName>
+        <PokemonNumber>{formattedId}</PokemonNumber>
+      </HeaderRow>
+
       <ImageContainer>
         <PokemonImage
           src={pokemon.photo}
@@ -40,54 +57,11 @@ export const PokemonCard = ({ pokemon }: PokemonCardProps) => {
         />
       </ImageContainer>
 
-      <HeaderRow>
-        <PokemonName>{pokemon.name}</PokemonName>
-        <PokemonNumber>{formattedId}</PokemonNumber>
-      </HeaderRow>
-
       <TypesRow>
         {pokemon.types.map((type) => (
           <Badge key={type} type={type} />
         ))}
       </TypesRow>
-
-      <InfoGrid>
-        <InfoItem>
-          <InfoLabel>Altura</InfoLabel>
-          <InfoValue>{pokemon.height.toFixed(1)}m</InfoValue>
-        </InfoItem>
-        <InfoItem>
-          <InfoLabel>Peso</InfoLabel>
-          <InfoValue>{pokemon.weight.toFixed(1)}kg</InfoValue>
-        </InfoItem>
-      </InfoGrid>
-
-      <AbilitiesContainer>
-        <InfoLabel>Habilidades</InfoLabel>
-        <AbilitiesList>
-          {pokemon.abilities.map((ability) => (
-            <AbilityTag key={ability}>{ability}</AbilityTag>
-          ))}
-        </AbilitiesList>
-      </AbilitiesContainer>
-
-      <StatsContainer>
-        <StatsTitle $mainType={pokemon.mainType}>Base Stats</StatsTitle>
-        <ProgressBar label="HP" value={pokemon.stats.hp} colorType={pokemon.mainType} />
-        <ProgressBar label="ATK" value={pokemon.stats.atk} colorType={pokemon.mainType} />
-        <ProgressBar label="DEF" value={pokemon.stats.def} colorType={pokemon.mainType} />
-        <ProgressBar
-          label="SATK"
-          value={pokemon.stats.satk}
-          colorType={pokemon.mainType}
-        />
-        <ProgressBar
-          label="SDEF"
-          value={pokemon.stats.sdef}
-          colorType={pokemon.mainType}
-        />
-        <ProgressBar label="SPD" value={pokemon.stats.spd} colorType={pokemon.mainType} />
-      </StatsContainer>
     </CardContainer>
   );
 };

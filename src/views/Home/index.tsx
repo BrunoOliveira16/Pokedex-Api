@@ -15,7 +15,11 @@ import {
 } from './styled';
 import { useHomeViewModel } from './viewModel';
 
-export const HomeView = () => {
+export interface HomeViewProps {
+  onSelectPokemon?: (id: number) => void;
+}
+
+export const HomeView = ({ onSelectPokemon }: HomeViewProps = {}) => {
   const {
     filteredPokemons,
     isLoading,
@@ -64,7 +68,11 @@ export const HomeView = () => {
     <>
       <PokemonGrid>
         {filteredPokemons.map((pokemon) => (
-          <PokemonCard key={pokemon.id} pokemon={pokemon} />
+          <PokemonCard
+            key={pokemon.id}
+            pokemon={pokemon}
+            onSelectPokemon={onSelectPokemon}
+          />
         ))}
       </PokemonGrid>
 

@@ -20,23 +20,10 @@ export const MainContent = styled.main`
 export const PokemonGrid = styled.ul`
   width: 100%;
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1.25rem;
   padding: 1rem 0;
   margin: 0;
-
-  @media screen and (min-width: 580px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  @media screen and (min-width: 960px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  @media screen and (min-width: 1280px) {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2rem;
-  }
 `;
 
 export const PaginationWrapper = styled.div`

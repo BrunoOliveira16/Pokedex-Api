@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { pokeApiService } from '../../../models/pokeApi.service';
 import { GenerationConfig, GENERATIONS, Pokemon } from '../../../models/pokemon.model';
 
-const BATCH_SIZE = 15;
+const BATCH_SIZE = 35;
 
 export interface HomeViewModel {
   pokemons: Pokemon[];

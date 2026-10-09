@@ -206,9 +206,36 @@ Foram implementados testes unitários com Vitest e React Testing Library cobrind
 
 ---
 
-## 9. Pontos de Atenção para as Próximas Tasks
+## 9. Simplificação do Card, Grid Compacto e Integração de Navegação
 
-1. **Integração na Tela Inicial (HomeView / Modal / Roteamento)**:
-   A `DetailsView` pode ser exibida em um modal sobreposto ou via roteamento, bastando fornecer `pokemonId` e os callbacks `onBack` e `onSelectPokemon`.
-2. **Navegação Contínua**:
-   Ao interagir com um Pokémon da cadeia evolutiva, a `DetailsView` dispara `onSelectPokemon(id)`, permitindo atualizar o `pokemonId` sem precisar fechar e reabrir a visualização.
+Na Task 5, os componentes da listagem principal foram harmonizados com a nova visualização de detalhes:
+
+### 9.1 Simplificação do `PokemonCard` (`src/views/Home/components/PokemonCard/`)
+
+- **Remoção de Redundâncias**: As barras de estatísticas base (`ProgressBar`), listas de habilidades e medidas corporais (altura/peso) foram removidas do card principal, uma vez que agora residem de forma aprofundada na `DetailsView`.
+- **Foco Visual Colecionável**: O card agora exibe exclusivamente o cabeçalho (nome e número formatado `#001`), a imagem oficial centralizada e os badges de tipos (`Badge`).
+- **Acessibilidade e Interatividade**:
+  - Aceita prop opcional `onSelectPokemon?: (id: number) => void`.
+  - Suporte a navegação por teclado (`Enter` e `Space` via `onKeyDown`) e atributos semânticos (`tabIndex={0}`, `role="button"`, `aria-label`).
+  - Efeito suave de `:hover` com elevação (`transform: translateY(-4px)`) e micro-interação na arte oficial (`transform: scale(1.08)`).
+
+### 9.2 Grid Responsivo Compacto (`src/views/Home/styled.ts`)
+
+- O container `PokemonGrid` foi simplificado para CSS Grid nativo auto-fill:
+  ```css
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1.25rem;
+  ```
+  Permite um layout fluído e adaptativo em telas de qualquer resolução, otimizando o número de cards visíveis simultaneamente.
+
+### 9.3 Orquestração da Navegação (`src/App.tsx`)
+
+- O estado do Pokémon selecionado (`selectedPokemonId: number | null`) é controlado no nível superior do `App`.
+- Quando `selectedPokemonId` está definido, exibe a `DetailsView` com callbacks de retorno (`onBack={() => setSelectedPokemonId(null)}`) e transição contínua entre evoluções (`onSelectPokemon={(id) => setSelectedPokemonId(id)}`).
+- Quando nulo, renderiza a `HomeView` passando o handler de seleção para os cards.
+
+### 9.4 Cobertura de Testes Automatizados
+
+- **`PokemonCard.test.tsx` (5 testes)**: Validação de renderização de nome/número/badges, fallback de imagem em erro, clique e acionamento por teclado (`Enter` / `Space`).
+- **`useHomeViewModel.test.ts` (5 testes)**: Validação de paginação, busca/filtros por texto, alternância de gerações e recuperação de erro.
+- **`App.test.tsx` (1 teste)**: Teste de integração ponta a ponta navegando da listagem inicial para os detalhes e retornando à listagem.
