@@ -22,7 +22,7 @@ export const StatLabel = styled.span<TypeColorProps>`
   font-weight: 700;
   text-align: right;
   color: ${({ theme, $colorType }) =>
-    theme.colors.types[$colorType] || theme.colors.text};
+    theme.colors.types[$colorType]?.icon || theme.colors.text};
 `;
 
 export const BarWrapper = styled.div`
@@ -42,7 +42,7 @@ export const BarFill = styled.div<BarFillProps>`
   height: 100%;
   width: ${({ $width }) => $width}%;
   background-color: ${({ theme, $colorType }) =>
-    theme.colors.types[$colorType] || theme.colors.primary};
+    theme.colors.types[$colorType]?.badge || theme.colors.primary};
   border-radius: ${({ theme }) => theme.borderRadius.full};
   transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 `;
@@ -53,5 +53,5 @@ export const StatValue = styled.span<TypeColorProps>`
   font-weight: 700;
   text-align: left;
   color: ${({ theme, $colorType }) =>
-    theme.colors.types[$colorType] || theme.colors.text};
+    theme.colors.types[$colorType]?.icon || theme.colors.text};
 `;

@@ -13,7 +13,7 @@ export const CardContainer = styled.li<CardContainerProps>`
   padding: 1rem 0.875rem 0.875rem;
   border-radius: ${({ theme }) => theme.borderRadius.lg};
   background-color: ${({ theme, $mainType }) =>
-    theme.colors.types[$mainType] || '#777777'};
+    theme.colors.types[$mainType]?.bg || '#777777'};
   background-image: url('/images/pokeball.svg');
   background-blend-mode: soft-light;
   background-size: 75% 75%;

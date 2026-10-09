@@ -11,7 +11,7 @@ export const DetailsContainer = styled.div<DetailsContainerProps>`
   width: 100%;
   background-color: ${({ theme, $mainType }) =>
     $mainType
-      ? theme.colors.types[$mainType] || theme.colors.primary
+      ? theme.colors.types[$mainType]?.bg || theme.colors.primary
       : theme.colors.background};
   transition: background-color 0.3s ease-in-out;
   position: relative;

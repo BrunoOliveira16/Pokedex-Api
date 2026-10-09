@@ -10,7 +10,7 @@ export const StyledBadge = styled.div<StyledBadgeProps>`
   gap: 0.35rem;
   padding: 0.3rem 0.8rem;
   border-radius: ${({ theme }) => theme.borderRadius.sm};
-  background-color: ${({ theme, $type }) => theme.colors.types[$type] || '#777777'};
+  background-color: ${({ theme, $type }) => theme.colors.types[$type]?.badge || '#777777'};
   color: #ffffff;
   font-size: 0.85rem;
   font-weight: 600;
