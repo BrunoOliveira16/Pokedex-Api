@@ -75,8 +75,10 @@ Onde `theme.colors.types` possui a assinatura `Record<string, TypeColorTokens>`.
 
 ## 5. Aplicação nos Componentes do Ecossistema
 
-1. **`Badge` (`src/components/Badge/styled.ts`)**:
-   - Consome `theme.colors.types[$type]?.badge`.
+1. **`Badge` (`src/components/Badge/styled.ts` & `src/components/Badge/index.tsx`)**:
+   - Container consome `theme.colors.types[$type]?.badge` como fundo.
+   - Rótulo textual consome `theme.colors.types[$type]?.icon` para contraste nítido.
+   - Ícone estilizado via `TypeIcon` consome `theme.colors.types[$type]?.icon`.
 2. **`PokemonCard` (`src/views/Home/components/PokemonCard/styled.ts`)**:
    - Consome `theme.colors.types[$mainType]?.bg`.
 3. **`DetailsView` (`src/views/Details/styled.ts`)**:
@@ -87,10 +89,44 @@ Onde `theme.colors.types` possui a assinatura `Record<string, TypeColorTokens>`.
 
 ---
 
-## 6. Cobertura de Testes Automatizados
+## 6. Técnica de CSS Mask para Recoloração Dinâmica de SVGs
 
-O arquivo `src/styles/theme.test.ts` valida:
+### 6.1 Desafio com Tags `<img>` Convencionais
 
-- Existência de todos os 18 tipos Pokémon no tema.
-- Formato hexadecimal válido (`#RRGGBB`) em todos os tokens `bg`, `badge` e `icon`.
-- Diferenciação estrita de tons (`bg !== badge !== icon`) para cada tipo.
+Tags `<img>` tradicionais não permitem alterar a cor de preenchimento (`fill` ou `color`) de arquivos SVG estáticos externos sem duplicar os arquivos ou embutir SVG inline no JSX.
+
+### 6.2 Solução Implementada (`TypeIcon`)
+
+No componente `Badge`, a tag `<img>` foi substituída pelo componente estilizado `TypeIcon` (`<span>` semântico):
+
+```css
+export const TypeIcon = styled.span<StyledBadgeProps>`
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  background-color: ${({ theme, $type }) =>
+    theme.colors.types[$type]?.icon || '#000000'};
+  mask-image: url(${({ $type }) => `/images/${$type}.svg`});
+  -webkit-mask-image: url(${({ $type }) => `/images/${$type}.svg`});
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-position: center;
+  flex-shrink: 0;
+`;
+```
+
+### 6.3 Vantagens da Abordagem
+
+- **Injeção Dinâmica 100% CSS**: O arquivo SVG estático (`/images/${type}.svg`) atua como máscara alfa, e o `background-color` injeta a cor exata definida no tema (`.icon`).
+- **Harmonia Cromática WCAG**: O ícone e o texto do tipo compartilham a mesma cor fechada (`.icon`), garantindo contraste legível sobre a cor vibrante da badge (`.badge`).
+- **Acessibilidade Preservada**: O elemento carrega os atributos `role="img"` e `aria-label={type}`, sendo plenamente interpretado por tecnologias assistivas.
+
+---
+
+## 7. Cobertura de Testes Automatizados
+
+- `src/styles/theme.test.ts`: Valida presença dos 18 tipos, integridade de cores hexadecimais e distinção entre `bg`, `badge` e `icon`.
+- `src/components/Badge/Badge.test.tsx`: Valida renderização do label, acessibilidade do `TypeIcon` (`role="img"` e `aria-label`) e controle da prop `showIcon`.

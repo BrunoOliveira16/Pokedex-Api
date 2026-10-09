@@ -1,4 +1,4 @@
-import { BadgeIcon, StyledBadge } from './styled';
+import { StyledBadge, TypeIcon } from './styled';
 
 export interface BadgeProps {
   type: string;
@@ -7,20 +7,11 @@ export interface BadgeProps {
 }
 
 export const Badge = ({ type, showIcon = true, className }: BadgeProps) => {
-  const iconPath = `/images/${type.toLowerCase()}.svg`;
+  const normalizedType = type.toLowerCase();
 
   return (
-    <StyledBadge $type={type.toLowerCase()} className={className}>
-      {showIcon && (
-        <BadgeIcon
-          src={iconPath}
-          alt={type}
-          onError={(e) => {
-            // Hide icon if SVG fails to load
-            (e.target as HTMLElement).style.display = 'none';
-          }}
-        />
-      )}
+    <StyledBadge $type={normalizedType} className={className}>
+      {showIcon && <TypeIcon $type={normalizedType} role="img" aria-label={type} />}
       <span>{type}</span>
     </StyledBadge>
   );
