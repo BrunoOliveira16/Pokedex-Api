@@ -164,11 +164,51 @@ Componente que renderiza a sequência evolutiva do Pokémon com avatares circula
 
 ---
 
-## 8. Pontos de Atenção para as Próximas Tasks (Construção da View/Modal de Detalhes)
+## 8. View Principal de Detalhes (`src/views/Details/`)
 
-1. **Montagem da View Principal**:
-   A View de Detalhes deve integrar os dados do `useDetailsViewModel` com o `StatBar` para cada atributo de `pokemon.stats` e o `EvolutionChain` passando `pokemon.evolutionChain`.
-2. **Navegação na Cadeia de Evolução**:
-   Ao passar o callback `onSelectPokemon`, a View permite que o usuário navegue entre estágios evolutivos sem fechar o modal/tela.
-3. **Cadeia de Evolução Opcional**:
-   `pokemon?.evolutionChain` pode ser `undefined` caso o Pokémon não possua evolução ou se houver instabilidade no endpoint; trate essa possibilidade na interface visual.
+Na Task 4, foi implementada a tela completa de detalhes conectando a ViewModel (`useDetailsViewModel`) aos componentes de apresentação (`StatBar`, `EvolutionChain` e componentes globais).
+
+### 8.1 Contrato de Props (`DetailsViewProps`)
+
+```ts
+export interface DetailsViewProps {
+  pokemonId?: string | number | null;
+  onBack?: () => void;
+  onSelectPokemon?: (id: number) => void;
+}
+```
+
+### 8.2 Arquitetura de Apresentação (Sub-renderers)
+
+Para manter o JSX limpo e declarativo, a `DetailsView` adota a convenção de sub-renderers privados:
+
+- **`renderTopNav()`**: Barra superior com botão de retorno interativo (`onBack`).
+- **`renderLoading()`**: Exibe o `Loader` centralizado com texto e animação giratória.
+- **`renderError()`**: Apresenta mensagem amigável de falha e botão de recuperação chamando `handleRetry()`.
+- **`renderContent()`**: Monta a visualização rica do Pokémon carregado:
+  - Cabeçalho colorido com nome, número e badges de tipos (`Badge`).
+  - Hero image destacada com transição e sombra.
+  - Cartão inferior branco contendo descrição, grid de métricas (altura, peso, categoria, proporção de gênero), lista de habilidades, barras de estatísticas base (`StatBar`) e a cadeia de evolução (`EvolutionChain`).
+
+### 8.3 Estilização e Tematização Dinâmica
+
+- **Fundo Contextual (`$mainType`)**: O container principal (`DetailsContainer`) ajusta sua cor de fundo dinamicamente baseando-se no tipo primário do Pokémon (`theme.colors.types[$mainType]`), criando uma identidade visual imersiva e consistente.
+- **Transient Props (`$` prefix)**: Todas as propriedades de controle visual (`$mainType`) não vazam para o DOM.
+
+### 8.4 Testes Automatizados (`Details.test.tsx`)
+
+Foram implementados testes unitários com Vitest e React Testing Library cobrindo:
+
+- Exibição inicial do estado de loading.
+- Tratamento e recuperação de erro de fetch com botão de retry.
+- Renderização completa de todos os dados do Pokémon (métricas, stats, habilidades, evoluções).
+- Disparo do callback `onBack` no clique do botão de voltar.
+
+---
+
+## 9. Pontos de Atenção para as Próximas Tasks
+
+1. **Integração na Tela Inicial (HomeView / Modal / Roteamento)**:
+   A `DetailsView` pode ser exibida em um modal sobreposto ou via roteamento, bastando fornecer `pokemonId` e os callbacks `onBack` e `onSelectPokemon`.
+2. **Navegação Contínua**:
+   Ao interagir com um Pokémon da cadeia evolutiva, a `DetailsView` dispara `onSelectPokemon(id)`, permitindo atualizar o `pokemonId` sem precisar fechar e reabrir a visualização.
