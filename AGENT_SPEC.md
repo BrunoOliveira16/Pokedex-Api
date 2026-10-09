@@ -158,6 +158,7 @@ Pokedex-Api/
 6. **Escrever Testes com Vitest**: Cobrir componentes com testes unitários importando `render` e `screen` de `src/test/test-utils`.
 7. **Validar com Linters e Testes**: Sempre rodar `npm run lint` e `npm run test` após qualquer alteração para validar que a suíte e a ordenação de imports (`simple-import-sort`) estão em conformidade.
 8. **Tipar Parâmetros de Props Diretamente**: Tipar props diretamente na assinatura do componente em vez de utilizar `React.FC`.
+9. **Seguir o Padrão de Commits e MRs**: Utilizar commits estritamente no formato `<tipo>: <descrição>` (sem escopo entre parênteses) em inglês e descrições de MR seguindo o template da seção 6.
 
 ### O que você NÃO DEVE fazer:
 
@@ -170,3 +171,106 @@ Pokedex-Api/
 7. **NÃO ignorar ou alterar a ordem de imports**: O linter bloqueia commits que não sigam a regra de ordenação alfabética e por escopo.
 8. **NÃO usar `any`** para contornar problemas de tipagem.
 9. **NÃO usar `React.FC`**: Declarar componentes tipando os parâmetros diretamente (`({ prop }: ComponentProps) => ...`).
+10. **NÃO adicionar escopo entre parênteses nos commits**: Nunca utilize `feat(modulo):` ou `refactor(core):`; use sempre apenas `feat:` ou `refactor:`.
+
+---
+
+## 6. Padrões de Git, Commits e Merge Requests
+
+Para manter o histórico do repositório limpo, rastreável e consistente, todas as alterações, commits e propostas de integração devem seguir rigorosamente os padrões abaixo.
+
+### 6.1 Padrão de Branches
+
+- Nomenclatura em **kebab-case** com prefixo indicativo do tipo de tarefa:
+  - `feature/<nome-da-feature>`: Novas telas, fluxos ou componentes (ex.: `feature/pokemon-details`).
+  - `refactor/<nome-do-refactor>`: Reestruturação de código ou migrações (ex.: `refactor/remove-legacy-assets`).
+  - `fix/<descricao-do-bug>`: Correção de bugs (ex.: `fix/pokemon-card-type-color`).
+  - `docs/<descricao>`: Documentação e guias (ex.: `docs/update-agent-spec`).
+  - `test/<descricao>`: Criação ou ajuste de suítes de testes (ex.: `test/add-view-model-tests`).
+
+### 6.2 Convenção de Mensagens de Commit
+
+- **Formato Estrito**: `<tipo>: <descrição>`
+- **REGRA OBRIGATÓRIA**: **NÃO utilizar escopo entre parênteses**. É expressamente proibido o uso de `feat(styles):`, `refactor(core):` ou similares. O prefixo deve ser direto, sem parênteses: `feat:`, `refactor:`, `fix:`, `docs:`, `test:`, `chore:`, `build:`.
+- **Idioma e Sintaxe**: Mensagens em **inglês**, iniciando em letra minúscula logo após o espaço, no modo imperativo e direto (sem ponto final).
+- **Tipos Permitidos**:
+  - `feat`: Adição de nova funcionalidade ou componente.
+  - `refactor`: Refatoração ou reestruturação de código sem alteração de funcionalidade.
+  - `fix`: Correção de bug.
+  - `docs`: Modificações em arquivos de documentação (`README.md`, `AGENT_SPEC.md`).
+  - `test`: Adição ou modificação de testes unitários ou de integração.
+  - `chore`: Atualizações de ferramentas, configurações de DX, dependências ou scripts.
+  - `build`: Modificações no bundler (Vite), TypeScript ou scripts de build.
+- **Exemplos Corretos**:
+  - `feat: implement pokemon search filter by id and name`
+  - `refactor: remove React.FC and adopt direct props typing across components`
+  - `docs: add AGENT_SPEC with architecture overview and coding guidelines`
+  - `fix: resolve broken sprite fallback when image fails to load`
+  - `test: add unit tests for home view model pagination`
+- **Exemplos Incorretos (Proibidos)**:
+  - ❌ `feat(styles): implement design system` _(possui escopo entre parênteses)_
+  - ❌ `refactor(core): remove React.FC` _(possui escopo entre parênteses)_
+  - ❌ `Corrigindo bug no card` _(em português / gerúndio)_
+
+### 6.3 Padrão de Merge Request (MR / PR)
+
+#### Título do MR
+
+- Seguir o mesmo padrão de commit sem parênteses: `<tipo>: <descrição clara da entrega>`
+- Exemplo: `refactor: migrate legacy Vanilla JS architecture to React 18, TypeScript and MVVM`
+
+#### Template Obrigatório da Descrição do MR
+
+```markdown
+## 📌 Contexto & Motivação
+
+[Descreva o problema anterior, limitações da arquitetura legada ou necessidade técnica/negócio que motivou esta entrega]
+
+---
+
+## 🚀 O Que Foi Feito?
+
+[Liste de forma categorizada e clara as mudanças técnicas, arquiteturais e novos componentes adicionados]
+
+### 1. [Categoria/Módulo 1]
+
+- ...
+
+### 2. [Categoria/Módulo 2]
+
+- ...
+
+---
+
+## 🧪 Como Testar & Validação
+
+[Comandos executados e passos manuais para verificar a entrega]
+
+### Testes Automatizados:
+
+- npm run test (resultado)
+- npm run lint (resultado)
+- npm run build (resultado)
+
+### Validação Manual:
+
+1. ...
+2. ...
+
+---
+
+## ✅ Checklist de Revisão
+
+- [ ] Compilação TypeScript sem erros (tsc --noEmit)
+- [ ] Cobertura de testes unitários com Vitest
+- [ ] Validação de Lint e ordenação de imports (npm run lint)
+- [ ] Conformidade total com AGENT_SPEC.md (zero React.FC, transient props $, etc.)
+```
+
+### 6.4 Validação Prévia Obrigatória
+
+Antes de commitar ou abrir qualquer MR:
+
+1. Executar `npm run lint` para garantir a ordenação de imports (`simple-import-sort`) e ausência de regras violadas.
+2. Executar `npm run test` (todos os testes devem passar; os hooks de `pre-commit` e `pre-push` do Husky rejeitarão qualquer falha).
+3. Executar `npx tsc --noEmit` para garantir zero erros de tipagem estrita.
