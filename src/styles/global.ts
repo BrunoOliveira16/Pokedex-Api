@@ -14,11 +14,13 @@ export const GlobalStyle = createGlobalStyle`
     background-size: cover;
     background-position: center;
     min-height: 100%;
+    scrollbar-gutter: stable;
+    overflow-y: scroll;
   }
 
   body {
     width: 100%;
-    max-width: 1440px;
+    max-width: 1560px;
     min-width: 360px;
     margin: 0 auto;
     background-color: ${({ theme }) => theme.colors.background};

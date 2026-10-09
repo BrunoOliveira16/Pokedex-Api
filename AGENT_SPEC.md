@@ -159,6 +159,7 @@ Pokedex-Api/
 7. **Validar com Linters e Testes**: Sempre rodar `npm run lint` e `npm run test` após qualquer alteração para validar que a suíte e a ordenação de imports (`simple-import-sort`) estão em conformidade.
 8. **Tipar Parâmetros de Props Diretamente**: Tipar props diretamente na assinatura do componente em vez de utilizar `React.FC`.
 9. **Seguir o Padrão de Commits e MRs**: Utilizar commits estritamente no formato `<tipo>: <descrição>` (sem escopo entre parênteses) em inglês e descrições de MR seguindo o template da seção 6.
+10. **Manter a Base de Conhecimento**: Toda entrega de feature, refatoração ou abertura de MR deve criar ou atualizar artefatos em `docs/knowledge/` conforme a seção 7.
 
 ### O que você NÃO DEVE fazer:
 
@@ -274,3 +275,26 @@ Antes de commitar ou abrir qualquer MR:
 1. Executar `npm run lint` para garantir a ordenação de imports (`simple-import-sort`) e ausência de regras violadas.
 2. Executar `npm run test` (todos os testes devem passar; os hooks de `pre-commit` e `pre-push` do Husky rejeitarão qualquer falha).
 3. Executar `npx tsc --noEmit` para garantir zero erros de tipagem estrita.
+
+---
+
+## 7. Manutenção Contínua da Base de Conhecimento (Knowledge Base)
+
+Para garantir contexto permanente e rastreabilidade da evolução arquitetural entre sessões de desenvolvimento e novos agentes, este repositório adota um sistema contínuo de documentação técnica em `docs/knowledge/`.
+
+### 7.1 Regra Estrita de Documentação
+
+- **Obrigatória em Cada Entrega**: Toda implementação de nova feature, grande refatoração estrutural ou abertura de Merge Request deve **criar ou atualizar arquivos Markdown dentro do diretório `docs/knowledge/`**.
+- O que deve ser registrado no documento:
+  1. **Objetivo & Motivação**: Qual problema foi resolvido ou funcionalidade adicionada.
+  2. **Arquitetura & Modelos**: Novas interfaces, contratos de API, normalizações e serviços criados.
+  3. **Decisões Técnicas**: Justificativas arquiteturais, trade-offs e soluções de contorno adotadas.
+  4. **Padrões de Testes & Validação**: Cobertura criada e como validar.
+  5. **Pontos de Atenção para Sessões Futuras**: Pré-requisitos e instruções para quem for estender o código nas próximas tarefas.
+
+### 7.2 Nomenclatura e Organização dos Documentos
+
+- Os arquivos devem residir em `docs/knowledge/` seguindo a convenção de prefixo sequencial de dois dígitos em kebab-case:
+  - `docs/knowledge/01-core-refactor-mvvm.md`: Refatoração central do Vanilla JS para React/MVVM.
+  - `docs/knowledge/02-pokemon-details-model.md`: Camada de dados e contratos da tela de detalhes e evolução.
+  - `docs/knowledge/<numero>-<nome-da-feature>.md`: Novas entregas subsequentes.

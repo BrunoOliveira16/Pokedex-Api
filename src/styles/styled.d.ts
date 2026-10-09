@@ -1,6 +1,8 @@
 import 'styled-components';
 
-import { ThemeType } from './theme';
+import { ThemeType, TypeColorTokens } from './theme';
+
+export type { TypeColorTokens };
 
 declare module 'styled-components' {
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type

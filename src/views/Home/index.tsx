@@ -5,18 +5,26 @@ import { GenerationTabs } from './components/GenerationTabs';
 import { PokemonCard } from './components/PokemonCard';
 import { SearchBar } from './components/SearchBar';
 import {
+  GridContainer,
   HomeContainer,
   MainContent,
   PaginationWrapper,
   PokemonGrid,
+  SpinnerSmall,
   StatusDescription,
   StatusMessage,
   StatusTitle,
+  TransitionIndicator,
 } from './styled';
 import { useHomeViewModel } from './viewModel';
 
-export const HomeView = () => {
+export interface HomeViewProps {
+  onSelectPokemon?: (id: number) => void;
+}
+
+export const HomeView = ({ onSelectPokemon }: HomeViewProps = {}) => {
   const {
+    pokemons,
     filteredPokemons,
     isLoading,
     isLoadingMore,
@@ -31,6 +39,9 @@ export const HomeView = () => {
     handleClearSearch,
     handleRetry,
   } = useHomeViewModel();
+
+  const isInitialLoading = isLoading && pokemons.length === 0;
+  const isChangingGeneration = isLoading && pokemons.length > 0;
 
   // --- Render Functions ---
 
@@ -61,10 +72,21 @@ export const HomeView = () => {
   );
 
   const renderPokemonGrid = () => (
-    <>
-      <PokemonGrid>
+    <GridContainer>
+      {isChangingGeneration && (
+        <TransitionIndicator role="status" aria-live="polite">
+          <SpinnerSmall />
+          <span>Carregando {selectedGen.label}...</span>
+        </TransitionIndicator>
+      )}
+
+      <PokemonGrid $isTransitioning={isChangingGeneration}>
         {filteredPokemons.map((pokemon) => (
-          <PokemonCard key={pokemon.id} pokemon={pokemon} />
+          <PokemonCard
+            key={pokemon.id}
+            pokemon={pokemon}
+            onSelectPokemon={onSelectPokemon}
+          />
         ))}
       </PokemonGrid>
 
@@ -74,17 +96,17 @@ export const HomeView = () => {
             variant="primary"
             size="lg"
             onClick={handleLoadMore}
-            disabled={isLoadingMore}
+            disabled={isLoadingMore || isChangingGeneration}
           >
             {isLoadingMore ? 'Carregando mais...' : 'Carregar Mais'}
           </Button>
         </PaginationWrapper>
       )}
-    </>
+    </GridContainer>
   );
 
   const renderContent = () => {
-    if (isLoading) return renderLoading();
+    if (isInitialLoading) return renderLoading();
     if (error) return renderError();
     if (filteredPokemons.length === 0) return renderEmpty();
     return renderPokemonGrid();
