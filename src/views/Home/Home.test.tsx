@@ -97,4 +97,44 @@ describe('HomeView integration with URL search params', () => {
     expect(screen.getByText('charmander')).toBeInTheDocument();
     expect(screen.queryByText('bulbasaur')).not.toBeInTheDocument();
   });
+
+  it('smoothly transitions between generations without unmounting existing pokemon grid', async () => {
+    let resolveGen2!: (data: Pokemon[]) => void;
+    const gen2Promise = new Promise<Pokemon[]>((resolve) => {
+      resolveGen2 = resolve;
+    });
+
+    const gen1List = [createMockPokemon(1, 'bulbasaur')];
+    const gen2List = [createMockPokemon(152, 'chikorita')];
+
+    vi.spyOn(pokeApiService, 'getPokemons')
+      .mockResolvedValueOnce(gen1List)
+      .mockImplementationOnce(() => gen2Promise);
+
+    render(<HomeView />, { initialEntries: ['/'] });
+
+    await waitFor(() => {
+      expect(screen.getByText('bulbasaur')).toBeInTheDocument();
+    });
+
+    // Click Gen 2 tab
+    const gen2Tab = screen.getByRole('button', { name: '2ª Geração' });
+    fireEvent.click(gen2Tab);
+
+    // Grid remains mounted with bulbasaur still visible during transition
+    expect(screen.getByText('bulbasaur')).toBeInTheDocument();
+    // Transition indicator is displayed
+    expect(screen.getByText(/carregando 2ª geração/i)).toBeInTheDocument();
+
+    // Resolve the promise for Gen 2
+    resolveGen2(gen2List);
+
+    await waitFor(() => {
+      expect(screen.getByText('chikorita')).toBeInTheDocument();
+    });
+
+    // Indicator disappears and previous pokemon is replaced
+    expect(screen.queryByText(/carregando 2ª geração/i)).not.toBeInTheDocument();
+    expect(screen.queryByText('bulbasaur')).not.toBeInTheDocument();
+  });
 });
