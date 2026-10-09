@@ -132,4 +132,22 @@ describe('EvolutionChain component', () => {
       expect(onSelectMock).toHaveBeenCalledWith(25);
     }
   });
+
+  it('renders official evolution item sprite with PokéAPI CDN url and accessible metadata', () => {
+    render(<EvolutionChain evolutions={mockEvolutions} />);
+
+    const itemSprite = screen.getByAltText('Item: thunder stone') as HTMLImageElement;
+    expect(itemSprite).toBeInTheDocument();
+    expect(itemSprite.src).toBe(
+      'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/thunder-stone.png'
+    );
+    expect(itemSprite.closest('div')).toHaveAttribute('title', 'thunder stone');
+  });
+
+  it('renders level-up trigger badge with minLevel correctly formatted', () => {
+    render(<EvolutionChain chain={mockEvolutionTree} />);
+
+    expect(screen.getByText('Nv. 16')).toBeInTheDocument();
+    expect(screen.getByText('Nv. 32')).toBeInTheDocument();
+  });
 });

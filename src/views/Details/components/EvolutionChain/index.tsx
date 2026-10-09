@@ -7,12 +7,19 @@ import {
   ChainContainer,
   EvolutionCard,
   EvolutionImage,
+  ItemContainer,
+  ItemSprite,
   NoEvolutionMessage,
   PokemonId,
   PokemonImageWrapper,
   PokemonName,
   TriggerBadge,
 } from './styled';
+
+const formatItemName = (item: string): string => item.replace(/-/g, ' ');
+
+const getItemSpriteUrl = (itemName: string): string =>
+  `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${itemName}.png`;
 
 export interface EvolutionChainProps {
   evolutions?: EvolutionNode[];
@@ -55,7 +62,7 @@ export const EvolutionChain = ({
 
   const formatTrigger = (node: EvolutionNode): string | null => {
     if (node.minLevel) return `Nv. ${node.minLevel}`;
-    if (node.item) return node.item.replace(/-/g, ' ');
+    if (node.item) return formatItemName(node.item);
     if (node.trigger && node.trigger !== 'level-up') {
       return node.trigger.replace(/-/g, ' ');
     }
@@ -73,7 +80,19 @@ export const EvolutionChain = ({
           <React.Fragment key={node.id}>
             {index > 0 && (
               <ArrowWrapper>
-                <ArrowIcon>➔</ArrowIcon>
+                {node.item && (
+                  <ItemContainer title={formatItemName(node.item)}>
+                    <ItemSprite
+                      src={getItemSpriteUrl(node.item)}
+                      alt={`Item: ${formatItemName(node.item)}`}
+                      loading="lazy"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                  </ItemContainer>
+                )}
+                <ArrowIcon aria-hidden="true">➔</ArrowIcon>
                 {triggerLabel && <TriggerBadge>{triggerLabel}</TriggerBadge>}
               </ArrowWrapper>
             )}

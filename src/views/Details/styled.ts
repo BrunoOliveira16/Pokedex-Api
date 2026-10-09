@@ -81,13 +81,16 @@ export const TypesRow = styled.div`
 
 export const HeroSection = styled.div`
   width: 100%;
-  height: 220px;
+  height: 240px;
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
-  margin-bottom: -2.5rem;
-  z-index: 2;
+  z-index: 3;
+
+  @media screen and (max-width: 480px) {
+    height: 200px;
+  }
 `;
 
 export const HeroImage = styled.img`
@@ -100,19 +103,34 @@ export const HeroImage = styled.img`
   &:hover {
     transform: scale(1.05);
   }
+
+  @media screen and (max-width: 480px) {
+    max-width: 210px;
+  }
 `;
 
 export const DetailsCard = styled.main`
   flex: 1;
   background-color: ${({ theme }) => theme.colors.cardBackground};
-  border-top-left-radius: 2.25rem;
-  border-top-right-radius: 2.25rem;
+  margin-top: -2.5rem;
+  position: relative;
+  z-index: 2;
+  border-top-left-radius: 2rem;
+  border-top-right-radius: 2rem;
   padding: 3.5rem 1.5rem 3rem;
   display: flex;
   flex-direction: column;
   gap: 1.75rem;
-  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: ${({ theme }) => theme.shadows.lg};
   width: 100%;
+
+  @media screen and (max-width: 480px) {
+    margin-top: -2rem;
+    padding: 3rem 1rem 2.5rem;
+    border-top-left-radius: 1.75rem;
+    border-top-right-radius: 1.75rem;
+    gap: 1.25rem;
+  }
 `;
 
 export const SectionBlock = styled.section`

@@ -99,6 +99,31 @@ export const TriggerBadge = styled.span`
   text-transform: capitalize;
 `;
 
+export const ItemContainer = styled.div`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: ${({ theme }) => theme.borderRadius.md};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+  padding: 0.15rem;
+  transition: transform 0.2s ease-in-out;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+`;
+
+export const ItemSprite = styled.img`
+  width: 1.5rem;
+  height: 1.5rem;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
+`;
+
 export const NoEvolutionMessage = styled.p`
   font-size: 0.95rem;
   color: ${({ theme }) => theme.colors.textMuted};
