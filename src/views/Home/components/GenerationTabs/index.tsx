@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { Button } from '../../../../components/Button';
 import { GenerationConfig } from '../../../../models/pokemon.model';
 import { TabsContainer } from './styled';
@@ -11,12 +9,12 @@ export interface GenerationTabsProps {
   disabled?: boolean;
 }
 
-export const GenerationTabs: React.FC<GenerationTabsProps> = ({
+export const GenerationTabs = ({
   generations,
   selectedGenId,
   onSelectGen,
   disabled = false,
-}) => {
+}: GenerationTabsProps) => {
   return (
     <TabsContainer>
       {generations.map((gen) => (

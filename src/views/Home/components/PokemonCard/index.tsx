@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { Badge } from '../../../../components/Badge';
 import { ProgressBar } from '../../../../components/ProgressBar';
 import { Pokemon } from '../../../../models/pokemon.model';
@@ -26,7 +24,7 @@ export interface PokemonCardProps {
   pokemon: Pokemon;
 }
 
-export const PokemonCard: React.FC<PokemonCardProps> = ({ pokemon }) => {
+export const PokemonCard = ({ pokemon }: PokemonCardProps) => {
   const formattedId = `#${String(pokemon.id).padStart(3, '0')}`;
 
   return (

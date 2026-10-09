@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { Button } from '../../components/Button';
 import { Header } from '../../components/Header';
 import { Loader } from '../../components/Loader';
@@ -17,7 +15,7 @@ import {
 } from './styled';
 import { useHomeViewModel } from './viewModel';
 
-export const HomeView: React.FC = () => {
+export const HomeView = () => {
   const {
     filteredPokemons,
     isLoading,

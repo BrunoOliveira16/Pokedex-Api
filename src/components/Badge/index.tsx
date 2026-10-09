@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { BadgeIcon, StyledBadge } from './styled';
 
 export interface BadgeProps {
@@ -8,7 +6,7 @@ export interface BadgeProps {
   className?: string;
 }
 
-export const Badge: React.FC<BadgeProps> = ({ type, showIcon = true, className }) => {
+export const Badge = ({ type, showIcon = true, className }: BadgeProps) => {
   const iconPath = `/images/${type.toLowerCase()}.svg`;
 
   return (

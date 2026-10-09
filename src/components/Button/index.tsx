@@ -10,14 +10,14 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   children: React.ReactNode;
 }
 
-export const Button: React.FC<ButtonProps> = ({
+export const Button = ({
   variant = 'primary',
   isActive = false,
   fullWidth = false,
   size = 'md',
   children,
   ...rest
-}) => {
+}: ButtonProps) => {
   return (
     <StyledButton
       $variant={variant}

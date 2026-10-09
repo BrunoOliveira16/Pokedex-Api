@@ -1,8 +1,6 @@
-import React from 'react';
-
 import { HeaderContainer, Logo, TitleBadge } from './styled';
 
-export const Header: React.FC = () => {
+export const Header = () => {
   return (
     <HeaderContainer>
       <Logo src="/images/pokeapi_256.png" alt="PokéAPI Logo" />

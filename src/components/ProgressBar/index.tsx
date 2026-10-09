@@ -1,5 +1,3 @@
-import React from 'react';
-
 import {
   BarBackground,
   BarFill,
@@ -16,12 +14,12 @@ export interface ProgressBarProps {
   colorType?: string;
 }
 
-export const ProgressBar: React.FC<ProgressBarProps> = ({
+export const ProgressBar = ({
   label,
   value,
   max = 252,
   colorType = 'normal',
-}) => {
+}: ProgressBarProps) => {
   const percentage = Math.min(Math.round((value / max) * 100), 100);
 
   return (

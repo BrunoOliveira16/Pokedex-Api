@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { ClearButton, SearchContainer, SearchInput } from './styled';
 
 export interface SearchBarProps {
@@ -9,12 +7,12 @@ export interface SearchBarProps {
   placeholder?: string;
 }
 
-export const SearchBar: React.FC<SearchBarProps> = ({
+export const SearchBar = ({
   value,
   onChange,
   onClear,
   placeholder = 'Buscar Pokémon por nome ou número...',
-}) => {
+}: SearchBarProps) => {
   return (
     <SearchContainer>
       <SearchInput

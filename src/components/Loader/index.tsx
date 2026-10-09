@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { LoaderContainer, LoaderText, SpinningPokeball } from './styled';
 
 export interface LoaderProps {
@@ -7,10 +5,10 @@ export interface LoaderProps {
   size?: number;
 }
 
-export const Loader: React.FC<LoaderProps> = ({
+export const Loader = ({
   text = 'Carregando Pokémons...',
   size = 48,
-}) => {
+}: LoaderProps) => {
   return (
     <LoaderContainer>
       <SpinningPokeball src="/images/pokeball.svg" alt="Carregando..." $size={size} />
