@@ -122,11 +122,53 @@ export interface DetailsViewModel {
 
 ---
 
-## 7. Pontos de Atenção para as Próximas Tasks (UI dos Componentes de Detalhes)
+## 7. Componentes Visuais Exclusivos da Tela de Detalhes (`src/views/Details/components/`)
 
-1. **Consumo Direto na View**:
-   A View de Detalhes deve apenas chamar `const { pokemon, isLoading, error, handleRetry } = useDetailsViewModel(idOrName);` e renderizar os sub-renderers apropriados.
-2. **Cadeia de Evolução Opcional**:
+Na Task 3, foram criados os componentes visuais dedicados que compõem a interface detalhada do Pokémon:
+
+### 7.1 `StatBar` (`src/views/Details/components/StatBar/`)
+
+Componente responsável por apresentar as estatísticas base (HP, ATK, DEF, SATK, SDEF, SPD) em formato de barra de progresso com rótulo, valor numérico e coloração contextual:
+
+- **Contrato de Props (`StatBarProps`)**:
+  ```ts
+  export interface StatBarProps {
+    label: string;
+    value: number;
+    max?: number; // Padrão: 255
+    statName?: 'hp' | 'atk' | 'def' | 'satk' | 'sdef' | 'spd' | string;
+    customColor?: string;
+    className?: string;
+  }
+  ```
+- **Estilização com Transient Props**: Utiliza `$progress` e `$statColor` para evitar vazamento de propriedades ao DOM. Consome dinamicamente a paleta do tema (`theme.colors.stats`).
+- **Acessibilidade**: Atributos `role="progressbar"`, `aria-valuenow`, `aria-valuemin` e `aria-valuemax`.
+
+### 7.2 `EvolutionChain` (`src/views/Details/components/EvolutionChain/`)
+
+Componente que renderiza a sequência evolutiva do Pokémon com avatares circulares, nomes, números formatados e indicadores de transição (nível, pedra ou condição especial):
+
+- **Contrato de Props (`EvolutionChainProps`)**:
+  ```ts
+  export interface EvolutionChainProps {
+    evolutions?: EvolutionNode[];
+    chain?: EvolutionNode[] | EvolutionNode | null;
+    currentPokemonId?: number;
+    onSelectPokemon?: (id: number) => void;
+    className?: string;
+  }
+  ```
+- **Flexibilidade**: Suporta tanto arrays lineares já planificados (`evolutions`) quanto árvores hierárquicas (`chain`), normalizando via `flattenEvolutionChain`.
+- **Casos de Borda**: Exibe mensagem informativa amigável (_"Este Pokémon não possui evoluções."_) quando o Pokémon não evolui.
+- **Interatividade**: Permite navegar diretamente para outro Pokémon da cadeia ao clicar no card (`onSelectPokemon`), destacando o estágio atual com `$isCurrent`.
+
+---
+
+## 8. Pontos de Atenção para as Próximas Tasks (Construção da View/Modal de Detalhes)
+
+1. **Montagem da View Principal**:
+   A View de Detalhes deve integrar os dados do `useDetailsViewModel` com o `StatBar` para cada atributo de `pokemon.stats` e o `EvolutionChain` passando `pokemon.evolutionChain`.
+2. **Navegação na Cadeia de Evolução**:
+   Ao passar o callback `onSelectPokemon`, a View permite que o usuário navegue entre estágios evolutivos sem fechar o modal/tela.
+3. **Cadeia de Evolução Opcional**:
    `pokemon?.evolutionChain` pode ser `undefined` caso o Pokémon não possua evolução ou se houver instabilidade no endpoint; trate essa possibilidade na interface visual.
-3. **Exibição Linear de Evolução**:
-   Para renderizar os cards ou avatares de evolução em linha na UI, utilize o helper puro `flattenEvolutionChain(pokemon.evolutionChain)`.
