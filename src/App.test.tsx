@@ -1,9 +1,10 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { App } from './App';
 import { pokeApiService } from './models/pokeApi.service';
 import { Pokemon, PokemonDetails } from './models/pokemon.model';
+import { render, screen } from './test/test-utils';
 
 const mockPokemon: Pokemon = {
   id: 1,
@@ -61,17 +62,17 @@ const mockDetails: PokemonDetails = {
   },
 };
 
-describe('App navigation integration', () => {
+describe('App routing and navigation integration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     window.scrollTo = vi.fn();
   });
 
-  it('renders HomeView by default and navigates to DetailsView upon card click, then back', async () => {
+  it('renders HomeView on "/" and navigates to DetailsView upon card click, then back to home', async () => {
     vi.spyOn(pokeApiService, 'getPokemons').mockResolvedValue([mockPokemon]);
     vi.spyOn(pokeApiService, 'getPokemonDetails').mockResolvedValue(mockDetails);
 
-    render(<App />);
+    render(<App />, { initialEntries: ['/'] });
 
     // Wait for Pokémon list in HomeView to load
     await waitFor(() => {
@@ -93,6 +94,30 @@ describe('App navigation integration', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Voltar' }));
 
     // Should return to HomeView
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/buscar pokémon/i)).toBeInTheDocument();
+    });
+  });
+
+  it('supports direct deep linking to "/pokemon/:id"', async () => {
+    vi.spyOn(pokeApiService, 'getPokemonDetails').mockResolvedValue(mockDetails);
+
+    render(<App />, { initialEntries: ['/pokemon/1'] });
+
+    await waitFor(() => {
+      expect(screen.getByText('Seed Pokémon')).toBeInTheDocument();
+    });
+
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'bulbasaur' })
+    ).toBeInTheDocument();
+  });
+
+  it('redirects unknown routes to home ("/")', async () => {
+    vi.spyOn(pokeApiService, 'getPokemons').mockResolvedValue([mockPokemon]);
+
+    render(<App />, { initialEntries: ['/unknown-route'] });
+
     await waitFor(() => {
       expect(screen.getByPlaceholderText(/buscar pokémon/i)).toBeInTheDocument();
     });
