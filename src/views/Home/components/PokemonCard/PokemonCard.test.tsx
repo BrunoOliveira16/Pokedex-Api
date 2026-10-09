@@ -1,9 +1,19 @@
 import { fireEvent } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Pokemon } from '../../../../models/pokemon.model';
 import { render, screen } from '../../../../test/test-utils';
 import { PokemonCard } from './index';
+
+const mockNavigate = vi.fn();
+
+vi.mock('react-router-dom', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('react-router-dom')>();
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
 
 const mockPokemon: Pokemon = {
   id: 25,
@@ -26,6 +36,10 @@ const mockPokemon: Pokemon = {
 };
 
 describe('PokemonCard component', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('renders pokemon name, formatted id and type badges', () => {
     render(<PokemonCard pokemon={mockPokemon} />);
 
@@ -44,35 +58,37 @@ describe('PokemonCard component', () => {
     expect(image).toHaveAttribute('src', '/images/pokeball.svg');
   });
 
-  it('triggers onSelectPokemon when clicked', () => {
+  it('navigates to /pokemon/:id by default when clicked', () => {
+    render(<PokemonCard pokemon={mockPokemon} />);
+
+    const card = screen.getByRole('button', { name: /ver detalhes de pikachu/i });
+    fireEvent.click(card);
+
+    expect(mockNavigate).toHaveBeenCalledWith('/pokemon/25');
+  });
+
+  it('navigates to /pokemon/:id on Enter and Space keys by default', () => {
+    render(<PokemonCard pokemon={mockPokemon} />);
+
+    const card = screen.getByRole('button', { name: /ver detalhes de pikachu/i });
+
+    fireEvent.keyDown(card, { key: 'Enter' });
+    expect(mockNavigate).toHaveBeenCalledWith('/pokemon/25');
+
+    fireEvent.keyDown(card, { key: ' ' });
+    expect(mockNavigate).toHaveBeenCalledWith('/pokemon/25');
+
+    expect(mockNavigate).toHaveBeenCalledTimes(2);
+  });
+
+  it('triggers custom onSelectPokemon callback if provided instead of navigating', () => {
     const handleSelect = vi.fn();
     render(<PokemonCard pokemon={mockPokemon} onSelectPokemon={handleSelect} />);
 
     const card = screen.getByRole('button', { name: /ver detalhes de pikachu/i });
     fireEvent.click(card);
 
-    expect(handleSelect).toHaveBeenCalledTimes(1);
     expect(handleSelect).toHaveBeenCalledWith(25);
-  });
-
-  it('triggers onSelectPokemon on Enter and Space key presses', () => {
-    const handleSelect = vi.fn();
-    render(<PokemonCard pokemon={mockPokemon} onSelectPokemon={handleSelect} />);
-
-    const card = screen.getByRole('button', { name: /ver detalhes de pikachu/i });
-
-    fireEvent.keyDown(card, { key: 'Enter' });
-    expect(handleSelect).toHaveBeenCalledWith(25);
-
-    fireEvent.keyDown(card, { key: ' ' });
-    expect(handleSelect).toHaveBeenCalledWith(25);
-
-    expect(handleSelect).toHaveBeenCalledTimes(2);
-  });
-
-  it('renders cleanly without interactive button role when onSelectPokemon is not provided', () => {
-    render(<PokemonCard pokemon={mockPokemon} />);
-
-    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    expect(mockNavigate).not.toHaveBeenCalled();
   });
 });

@@ -1,3 +1,5 @@
+import { useNavigate } from 'react-router-dom';
+
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { Loader } from '../../components/Loader';
@@ -36,18 +38,30 @@ export interface DetailsViewProps {
   onSelectPokemon?: (id: number) => void;
 }
 
-export const DetailsView = ({ pokemonId, onBack, onSelectPokemon }: DetailsViewProps) => {
-  const { pokemon, isLoading, error, handleRetry } = useDetailsViewModel(pokemonId);
+export const DetailsView = ({
+  pokemonId,
+  onBack,
+  onSelectPokemon,
+}: DetailsViewProps = {}) => {
+  const { pokemon, isLoading, error, handleRetry, handleGoBack } =
+    useDetailsViewModel(pokemonId);
+  const navigate = useNavigate();
+
+  const handleBack = onBack ?? handleGoBack;
+  const handleSelectEvolution =
+    onSelectPokemon ??
+    ((id: number) => {
+      navigate(`/pokemon/${id}`);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
 
   // --- Sub-renderers ---
 
   const renderTopNav = () => (
     <TopNav>
-      {onBack && (
-        <BackButton type="button" onClick={onBack} aria-label="Voltar">
-          ← Voltar
-        </BackButton>
-      )}
+      <BackButton type="button" onClick={handleBack} aria-label="Voltar">
+        ← Voltar
+      </BackButton>
     </TopNav>
   );
 
@@ -154,7 +168,7 @@ export const DetailsView = ({ pokemonId, onBack, onSelectPokemon }: DetailsViewP
             <EvolutionChain
               chain={pokemon.evolutionChain}
               currentPokemonId={pokemon.id}
-              onSelectPokemon={onSelectPokemon}
+              onSelectPokemon={handleSelectEvolution}
             />
           </SectionBlock>
         </DetailsCard>

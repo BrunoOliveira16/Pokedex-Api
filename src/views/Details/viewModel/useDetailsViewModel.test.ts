@@ -1,9 +1,21 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
+import React from 'react';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { pokeApiService } from '../../../models/pokeApi.service';
 import { PokemonDetails } from '../../../models/pokemon.model';
 import { useDetailsViewModel } from './useDetailsViewModel';
+
+const mockNavigate = vi.fn();
+
+vi.mock('react-router-dom', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('react-router-dom')>();
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
 
 const mockPokemonDetails: PokemonDetails = {
   id: 25,
@@ -38,6 +50,26 @@ const mockPokemonDetails: PokemonDetails = {
   isMythical: false,
 };
 
+const createRouteWrapper = (initialEntry: string) => {
+  return ({ children }: { children: React.ReactNode }) =>
+    React.createElement(
+      MemoryRouter,
+      { initialEntries: [initialEntry] },
+      React.createElement(
+        Routes,
+        null,
+        React.createElement(Route, {
+          path: '/pokemon/:id',
+          element: React.createElement(React.Fragment, null, children),
+        }),
+        React.createElement(Route, {
+          path: '*',
+          element: React.createElement(React.Fragment, null, children),
+        })
+      )
+    );
+};
+
 describe('useDetailsViewModel', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -47,12 +79,14 @@ describe('useDetailsViewModel', () => {
     vi.restoreAllMocks();
   });
 
-  it('initializes with loading true and loads pokemon details successfully', async () => {
+  it('reads id from router params and loads pokemon details successfully', async () => {
     const getDetailsSpy = vi
       .spyOn(pokeApiService, 'getPokemonDetails')
       .mockResolvedValueOnce(mockPokemonDetails);
 
-    const { result } = renderHook(() => useDetailsViewModel(25));
+    const { result } = renderHook(() => useDetailsViewModel(), {
+      wrapper: createRouteWrapper('/pokemon/25'),
+    });
 
     expect(result.current.isLoading).toBe(true);
     expect(result.current.pokemon).toBeNull();
@@ -62,9 +96,26 @@ describe('useDetailsViewModel', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    expect(getDetailsSpy).toHaveBeenCalledWith(25);
+    expect(getDetailsSpy).toHaveBeenCalledWith('25');
     expect(result.current.pokemon).toEqual(mockPokemonDetails);
     expect(result.current.error).toBeNull();
+  });
+
+  it('accepts an explicit identifier override instead of router params', async () => {
+    const getDetailsSpy = vi
+      .spyOn(pokeApiService, 'getPokemonDetails')
+      .mockResolvedValueOnce(mockPokemonDetails);
+
+    const { result } = renderHook(() => useDetailsViewModel(25), {
+      wrapper: createRouteWrapper('/pokemon/999'),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(getDetailsSpy).toHaveBeenCalledWith(25);
+    expect(result.current.pokemon).toEqual(mockPokemonDetails);
   });
 
   it('handles API errors gracefully and updates error state', async () => {
@@ -72,7 +123,9 @@ describe('useDetailsViewModel', () => {
       new Error('Pokémon não encontrado')
     );
 
-    const { result } = renderHook(() => useDetailsViewModel('mewtwo'));
+    const { result } = renderHook(() => useDetailsViewModel(), {
+      wrapper: createRouteWrapper('/pokemon/mewtwo'),
+    });
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
@@ -87,7 +140,9 @@ describe('useDetailsViewModel', () => {
       'Network crash string'
     );
 
-    const { result } = renderHook(() => useDetailsViewModel(999));
+    const { result } = renderHook(() => useDetailsViewModel(), {
+      wrapper: createRouteWrapper('/pokemon/999'),
+    });
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
@@ -97,10 +152,12 @@ describe('useDetailsViewModel', () => {
     expect(result.current.error).toBe('Falha ao carregar detalhes do Pokémon');
   });
 
-  it('does not fetch and keeps default null state when idOrName is null or empty', async () => {
+  it('keeps default null state when no id is provided in route or args', async () => {
     const getDetailsSpy = vi.spyOn(pokeApiService, 'getPokemonDetails');
 
-    const { result } = renderHook(() => useDetailsViewModel(null));
+    const { result } = renderHook(() => useDetailsViewModel(), {
+      wrapper: createRouteWrapper('/'),
+    });
 
     expect(result.current.isLoading).toBe(false);
     expect(result.current.pokemon).toBeNull();
@@ -114,7 +171,9 @@ describe('useDetailsViewModel', () => {
       .mockRejectedValueOnce(new Error('Falha temporária de rede'))
       .mockResolvedValueOnce(mockPokemonDetails);
 
-    const { result } = renderHook(() => useDetailsViewModel(25));
+    const { result } = renderHook(() => useDetailsViewModel(), {
+      wrapper: createRouteWrapper('/pokemon/25'),
+    });
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
@@ -136,5 +195,17 @@ describe('useDetailsViewModel', () => {
     expect(getDetailsSpy).toHaveBeenCalledTimes(2);
     expect(result.current.pokemon).toEqual(mockPokemonDetails);
     expect(result.current.error).toBeNull();
+  });
+
+  it('triggers navigate(-1) when handleGoBack is called', () => {
+    const { result } = renderHook(() => useDetailsViewModel(), {
+      wrapper: createRouteWrapper('/'),
+    });
+
+    act(() => {
+      result.current.handleGoBack();
+    });
+
+    expect(mockNavigate).toHaveBeenCalledWith(-1);
   });
 });

@@ -6,6 +6,16 @@ import { PokemonDetails } from '../../models/pokemon.model';
 import { render, screen, waitFor } from '../../test/test-utils';
 import { DetailsView } from './index';
 
+const mockNavigate = vi.fn();
+
+vi.mock('react-router-dom', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('react-router-dom')>();
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
+
 const mockPokemonDetails: PokemonDetails = {
   id: 25,
   name: 'pikachu',
@@ -161,5 +171,20 @@ describe('DetailsView component', () => {
     await user.click(backButton);
 
     expect(onBackMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('navigates back via router when back button is clicked without onBack prop', async () => {
+    const user = userEvent.setup();
+
+    vi.spyOn(pokeApiService, 'getPokemonDetails').mockResolvedValueOnce(
+      mockPokemonDetails
+    );
+
+    render(<DetailsView pokemonId={25} />);
+
+    const backButton = screen.getByRole('button', { name: 'Voltar' });
+    await user.click(backButton);
+
+    expect(mockNavigate).toHaveBeenCalledWith(-1);
   });
 });

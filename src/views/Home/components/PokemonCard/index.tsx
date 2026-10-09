@@ -1,4 +1,5 @@
 import { KeyboardEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { Badge } from '../../../../components/Badge';
 import { Pokemon } from '../../../../models/pokemon.model';
@@ -18,28 +19,34 @@ export interface PokemonCardProps {
 }
 
 export const PokemonCard = ({ pokemon, onSelectPokemon }: PokemonCardProps) => {
+  const navigate = useNavigate();
   const formattedId = `#${String(pokemon.id).padStart(3, '0')}`;
 
-  const handleClick = () => {
-    onSelectPokemon?.(pokemon.id);
+  const handleSelect = () => {
+    if (onSelectPokemon) {
+      onSelectPokemon(pokemon.id);
+    } else {
+      navigate(`/pokemon/${pokemon.id}`);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLLIElement>) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      onSelectPokemon?.(pokemon.id);
+      handleSelect();
     }
   };
 
   return (
     <CardContainer
       $mainType={pokemon.mainType}
-      $isClickable={Boolean(onSelectPokemon)}
-      onClick={handleClick}
+      $isClickable={true}
+      onClick={handleSelect}
       onKeyDown={handleKeyDown}
-      tabIndex={onSelectPokemon ? 0 : undefined}
-      role={onSelectPokemon ? 'button' : undefined}
-      aria-label={onSelectPokemon ? `Ver detalhes de ${pokemon.name}` : undefined}
+      tabIndex={0}
+      role="button"
+      aria-label={`Ver detalhes de ${pokemon.name}`}
     >
       <HeaderRow>
         <PokemonName>{pokemon.name}</PokemonName>
