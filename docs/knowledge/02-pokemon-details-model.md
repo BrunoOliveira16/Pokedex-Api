@@ -97,11 +97,36 @@ Foram implementados 17 testes automatizados cobrindo:
 
 ---
 
-## 6. Pontos de Atenção para as Próximas Tasks (UI & ViewModel)
+## 6. Camada de ViewModel da Tela de Detalhes (`src/views/Details/viewModel/`)
 
-1. **Uso no ViewModel**:
-   Para carregar os detalhes de um Pokémon na tela ou modal, utilize diretamente `pokeApiService.getPokemonDetails(id)`.
+Na Task 2, foi implementado o custom hook `useDetailsViewModel` para orquestrar o estado e o ciclo de vida da tela/modal de detalhes.
+
+### 6.1 Contrato da ViewModel (`DetailsViewModel`)
+
+```ts
+export interface DetailsViewModel {
+  pokemon: PokemonDetails | null;
+  isLoading: boolean;
+  error: string | null;
+  handleRetry: () => void;
+}
+```
+
+### 6.2 Comportamentos e Estados
+
+- **Entrada (`idOrName?: string | number | null`)**: Aceita ID numérico ou nome do Pokémon. Se o identificador for nulo ou vazio, a ViewModel permanece em estado neutro (`pokemon: null`, `isLoading: false`, `error: null`).
+- **Estado de Carregamento (`isLoading`)**: Sinaliza o início e término da busca assíncrona.
+- **Tratamento Seguro de Erros (`error`)**: Captura exceções da API através de narrowing (`err instanceof Error ? err.message : '...'`), mantendo zero `any`.
+- **Ação de Recuperação (`handleRetry`)**: Permite que a View reexecute a chamada em caso de falha de rede sem recarregar a aplicação.
+- **Testes Unitários (`useDetailsViewModel.test.ts`)**: Cobertura completa de loading inicial, sucesso, erro de API e recuperação via retry.
+
+---
+
+## 7. Pontos de Atenção para as Próximas Tasks (UI dos Componentes de Detalhes)
+
+1. **Consumo Direto na View**:
+   A View de Detalhes deve apenas chamar `const { pokemon, isLoading, error, handleRetry } = useDetailsViewModel(idOrName);` e renderizar os sub-renderers apropriados.
 2. **Cadeia de Evolução Opcional**:
-   `evolutionChain` pode ser `undefined` caso o Pokémon não possua evolução ou se houver instabilidade no endpoint; trate essa possibilidade na interface visual.
+   `pokemon?.evolutionChain` pode ser `undefined` caso o Pokémon não possua evolução ou se houver instabilidade no endpoint; trate essa possibilidade na interface visual.
 3. **Exibição Linear de Evolução**:
-   Para renderizar os cards ou avatares de evolução em linha na UI, utilize `flattenEvolutionChain(details.evolutionChain)`.
+   Para renderizar os cards ou avatares de evolução em linha na UI, utilize o helper puro `flattenEvolutionChain(pokemon.evolutionChain)`.
