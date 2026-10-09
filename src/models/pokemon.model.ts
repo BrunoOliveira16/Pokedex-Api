@@ -99,3 +99,213 @@ export function mapRawPokeApiToPokemon(raw: RawPokeApiDetail): Pokemon {
     },
   };
 }
+
+export interface PokemonGenderRate {
+  maleRate: number;
+  femaleRate: number;
+  isGenderless: boolean;
+}
+
+export interface EvolutionNode {
+  id: number;
+  name: string;
+  photo: string;
+  minLevel: number | null;
+  trigger: string | null;
+  item: string | null;
+  evolvesTo: EvolutionNode[];
+}
+
+export interface PokemonSpeciesData {
+  description: string;
+  genus: string;
+  genderRate: PokemonGenderRate;
+  captureRate: number;
+  baseHappiness: number;
+  growthRate: string;
+  eggGroups: string[];
+  evolutionChainUrl: string;
+  isLegendary: boolean;
+  isMythical: boolean;
+}
+
+export interface PokemonDetails extends Pokemon {
+  description: string;
+  genus: string;
+  genderRate: PokemonGenderRate;
+  captureRate: number;
+  baseHappiness: number;
+  growthRate: string;
+  eggGroups: string[];
+  evolutionChainUrl: string;
+  isLegendary: boolean;
+  isMythical: boolean;
+  evolutionChain?: EvolutionNode;
+}
+
+export interface RawFlavorTextEntry {
+  flavor_text: string;
+  language: { name: string; url?: string };
+  version?: { name: string; url?: string };
+}
+
+export interface RawGenusEntry {
+  genus: string;
+  language: { name: string; url?: string };
+}
+
+export interface RawPokeApiSpecies {
+  id: number;
+  name: string;
+  flavor_text_entries: RawFlavorTextEntry[];
+  genera: RawGenusEntry[];
+  gender_rate: number;
+  capture_rate: number;
+  base_happiness: number;
+  growth_rate?: { name: string; url?: string };
+  egg_groups?: Array<{ name: string; url?: string }>;
+  evolution_chain?: { url: string };
+  is_legendary?: boolean;
+  is_mythical?: boolean;
+}
+
+export interface RawEvolutionDetail {
+  min_level?: number | null;
+  trigger?: { name: string; url?: string };
+  item?: { name: string; url?: string } | null;
+}
+
+export interface RawEvolutionNode {
+  is_baby?: boolean;
+  species: {
+    name: string;
+    url: string;
+  };
+  evolution_details: RawEvolutionDetail[];
+  evolves_to: RawEvolutionNode[];
+}
+
+export interface RawEvolutionChainResponse {
+  id: number;
+  chain: RawEvolutionNode;
+}
+
+export function extractIdFromUrl(url: string): number {
+  if (!url) return 0;
+  const matches = url.match(/\/(\d+)\/?$/);
+  if (matches && matches[1]) {
+    return parseInt(matches[1], 10);
+  }
+  const parts = url.split('/').filter(Boolean);
+  const last = parts[parts.length - 1];
+  const parsed = parseInt(last, 10);
+  return isNaN(parsed) ? 0 : parsed;
+}
+
+export function getPokemonSpriteUrl(id: number): string {
+  if (!id || id <= 0) return '/images/pokeball.svg';
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${id}.png`;
+}
+
+export function formatFlavorText(text: string): string {
+  if (!text) return '';
+  return text
+    .replace(/[\f\n\r\t]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+export function calculateGenderRate(genderRate: number): PokemonGenderRate {
+  if (genderRate === -1 || genderRate < 0) {
+    return {
+      maleRate: 0,
+      femaleRate: 0,
+      isGenderless: true,
+    };
+  }
+  const femaleRate = (genderRate / 8) * 100;
+  const maleRate = Math.max(0, 100 - femaleRate);
+  return {
+    maleRate,
+    femaleRate,
+    isGenderless: false,
+  };
+}
+
+export function mapRawSpeciesToSpeciesData(raw: RawPokeApiSpecies): PokemonSpeciesData {
+  const englishFlavor =
+    raw.flavor_text_entries?.find((entry) => entry.language.name === 'en') ||
+    raw.flavor_text_entries?.[0];
+  const description = englishFlavor ? formatFlavorText(englishFlavor.flavor_text) : '';
+
+  const englishGenus =
+    raw.genera?.find((g) => g.language.name === 'en') || raw.genera?.[0];
+  const genus = englishGenus ? englishGenus.genus.trim() : '';
+
+  const genderRate = calculateGenderRate(raw.gender_rate ?? -1);
+  const captureRate = raw.capture_rate ?? 0;
+  const baseHappiness = raw.base_happiness ?? 0;
+  const growthRate = raw.growth_rate?.name || 'medium';
+  const eggGroups = (raw.egg_groups || []).map((eg) => eg.name);
+  const evolutionChainUrl = raw.evolution_chain?.url || '';
+  const isLegendary = Boolean(raw.is_legendary);
+  const isMythical = Boolean(raw.is_mythical);
+
+  return {
+    description,
+    genus,
+    genderRate,
+    captureRate,
+    baseHappiness,
+    growthRate,
+    eggGroups,
+    evolutionChainUrl,
+    isLegendary,
+    isMythical,
+  };
+}
+
+export function mapRawEvolutionNodeToEvolutionNode(
+  rawNode: RawEvolutionNode
+): EvolutionNode {
+  const id = extractIdFromUrl(rawNode.species.url);
+  const details = rawNode.evolution_details?.[0];
+
+  return {
+    id,
+    name: rawNode.species.name,
+    photo: id > 0 ? getPokemonSpriteUrl(id) : '/images/pokeball.svg',
+    minLevel: details?.min_level ?? null,
+    trigger: details?.trigger?.name ?? null,
+    item: details?.item?.name ?? null,
+    evolvesTo: (rawNode.evolves_to || []).map(mapRawEvolutionNodeToEvolutionNode),
+  };
+}
+
+export function mapRawEvolutionChainToEvolutionNode(
+  raw: RawEvolutionChainResponse
+): EvolutionNode {
+  return mapRawEvolutionNodeToEvolutionNode(raw.chain);
+}
+
+export function flattenEvolutionChain(root: EvolutionNode): EvolutionNode[] {
+  const result: EvolutionNode[] = [root];
+  for (const child of root.evolvesTo) {
+    result.push(...flattenEvolutionChain(child));
+  }
+  return result;
+}
+
+export function mapRawPokeApiToPokemonDetails(
+  pokemon: Pokemon,
+  rawSpecies: RawPokeApiSpecies,
+  evolutionChain?: EvolutionNode
+): PokemonDetails {
+  const speciesData = mapRawSpeciesToSpeciesData(rawSpecies);
+
+  return {
+    ...pokemon,
+    ...speciesData,
+    evolutionChain,
+  };
+}
